@@ -1,0 +1,126 @@
+"use client";
+
+/**
+ * OrderBook Viewer Component
+ *
+ * Main component that displays order books from all connected exchanges
+ */
+
+import {Button} from "@/components/ui/button";
+
+import {useOrderBook} from "./orderbook-provider";
+import {OrderBookTable} from "./orderbook-table";
+import {ConnectionStatusIndicator} from "./connection-status";
+
+interface OrderBookViewerProps {
+  /** Maximum rows to display per order book side */
+  maxRows?: number;
+}
+
+/**
+ * OrderBookViewer is the main UI component that displays order book data
+ */
+export function OrderBookViewer({maxRows = 10}: OrderBookViewerProps) {
+  const {orderBook, status, isInitializing, errors, connect, disconnect, clearErrors} =
+    useOrderBook();
+
+  // Show loading state
+  if (isInitializing) {
+    return (
+      <div className="flex h-full items-center justify-center">
+        <div className="text-center">
+          <div className="mb-2 text-lg font-semibold">Initializing...</div>
+          <div className="text-muted-foreground text-sm">Setting up exchange connections</div>
+        </div>
+      </div>
+    );
+  }
+
+  const hasConnections = status && status.connectedCount > 0;
+  const hasOrderBooks = orderBook && orderBook.byExchange.size > 0;
+
+  return (
+    <div className="flex h-full flex-col gap-4">
+      {/* Header with controls */}
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-bold">Multi-Exchange Order Book</h1>
+          <p className="text-muted-foreground text-sm">
+            Real-time order book data from multiple exchanges
+          </p>
+        </div>
+
+        <div className="flex gap-2">
+          {hasConnections ? (
+            <Button size="sm" variant="outline" onClick={disconnect}>
+              Disconnect
+            </Button>
+          ) : (
+            <Button size="sm" onClick={connect}>
+              Connect
+            </Button>
+          )}
+        </div>
+      </div>
+
+      {/* Errors display */}
+      {errors.length > 0 && (
+        <div className="rounded-lg border border-red-200 bg-red-50 p-4 dark:border-red-900 dark:bg-red-950/20">
+          <div className="mb-2 flex items-center justify-between">
+            <h3 className="text-sm font-semibold text-red-800 dark:text-red-400">
+              Errors ({errors.length})
+            </h3>
+            <Button className="h-auto p-1 text-xs" size="sm" variant="ghost" onClick={clearErrors}>
+              Clear
+            </Button>
+          </div>
+          <div className="space-y-1">
+            {errors.slice(0, 5).map((error, index) => (
+              <div key={`error-${index}`} className="text-xs text-red-700 dark:text-red-400">
+                [{error.exchange}] {error.message}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Status indicator */}
+      {status && <ConnectionStatusIndicator status={status} />}
+
+      {/* Order books grid */}
+      {hasOrderBooks ? (
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+          {Array.from(orderBook.byExchange.values()).map((exchangeOrderBook) => (
+            <div key={exchangeOrderBook.exchange} className="bg-card rounded-lg border p-4">
+              <OrderBookTable maxRows={maxRows} orderBook={exchangeOrderBook} />
+            </div>
+          ))}
+        </div>
+      ) : (
+        <div className="flex flex-1 items-center justify-center rounded-lg border border-dashed">
+          <div className="text-center">
+            <div className="mb-2 text-lg font-semibold">No Order Book Data</div>
+            <div className="text-muted-foreground mb-4 text-sm">
+              {hasConnections
+                ? "Waiting for data from exchanges..."
+                : "Connect to exchanges to view order books"}
+            </div>
+            {!hasConnections && (
+              <Button size="sm" onClick={connect}>
+                Connect Now
+              </Button>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Footer info */}
+      {orderBook && (
+        <div className="text-muted-foreground text-center text-xs">
+          Last update: {new Date(orderBook.lastUpdate).toLocaleTimeString()} · Symbol:{" "}
+          {orderBook.symbol}
+        </div>
+      )}
+    </div>
+  );
+}
