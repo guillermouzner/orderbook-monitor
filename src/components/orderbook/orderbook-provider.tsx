@@ -14,7 +14,7 @@ import {
   type ConsolidatedOrderBook,
   type ManagerStatus,
 } from "@/lib/orderbook-manager";
-import {BinanceConnector} from "@/lib/exchanges";
+import {BinanceConnector, FoxbitConnector} from "@/lib/exchanges";
 
 /**
  * Context value interface
@@ -109,6 +109,21 @@ export function OrderBookProvider({
     });
 
     manager.registerConnector(binanceConnector);
+
+    // Register FoxBit connector
+    // Note: FoxBit uses BRL (Brazilian Real), so we use BTC/BRL
+    const foxbitConnector = new FoxbitConnector({
+      symbol: "BTC/BRL",
+      depth,
+      reconnect: {
+        enabled: true,
+        maxAttempts: 5,
+        delayMs: 1000,
+        backoffMultiplier: 1.5,
+      },
+    });
+
+    manager.registerConnector(foxbitConnector);
 
     // Subscribe to manager events
     const unsubOrderBook = manager.onOrderBookUpdate((data) => {
