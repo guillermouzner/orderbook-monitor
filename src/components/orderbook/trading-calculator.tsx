@@ -105,31 +105,43 @@ export function TradingCalculator({orderBook}: TradingCalculatorProps) {
           Comprar USDT
         </h3>
         <div className="space-y-3">
-          {amounts.map((amount) => (
-            <div key={`buy-${amount}`}>
-              <div className="mb-1 text-xs font-medium text-muted-foreground">
-                {formatUsdt(amount)} USDT
-              </div>
-              <div className="space-y-1">
-                {Array.from(orderBook.byExchange.values()).map((exchangeOb) => {
-                  const price = calculateBuyPrice(exchangeOb.asks, amount);
-                  return (
+          {amounts.map((amount) => {
+            // Calculate prices for all exchanges
+            const exchangePrices = Array.from(orderBook.byExchange.values())
+              .map((exchangeOb) => ({
+                exchange: exchangeOb.exchange,
+                price: calculateBuyPrice(exchangeOb.asks, amount),
+              }))
+              // Sort by best price (lowest first for buying)
+              .sort((a, b) => {
+                // N/A values go to the end
+                if (a.price === null && b.price === null) return 0;
+                if (a.price === null) return 1;
+                if (b.price === null) return -1;
+                return a.price - b.price;
+              });
+
+            return (
+              <div key={`buy-${amount}`}>
+                <div className="mb-1 text-xs font-medium text-muted-foreground">
+                  {formatUsdt(amount)} USDT
+                </div>
+                <div className="space-y-1">
+                  {exchangePrices.map(({exchange, price}) => (
                     <div
-                      key={`buy-${amount}-${exchangeOb.exchange}`}
+                      key={`buy-${amount}-${exchange}`}
                       className="flex items-center justify-between text-xs"
                     >
-                      <span className="capitalize text-muted-foreground">
-                        {exchangeOb.exchange}
-                      </span>
+                      <span className="capitalize text-muted-foreground">{exchange}</span>
                       <span className="font-mono font-medium">
                         {price ? formatBrl(price) : "N/A"}
                       </span>
                     </div>
-                  );
-                })}
+                  ))}
+                </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </div>
 
@@ -139,31 +151,43 @@ export function TradingCalculator({orderBook}: TradingCalculatorProps) {
           Vender USDT
         </h3>
         <div className="space-y-3">
-          {amounts.map((amount) => (
-            <div key={`sell-${amount}`}>
-              <div className="mb-1 text-xs font-medium text-muted-foreground">
-                {formatUsdt(amount)} USDT
-              </div>
-              <div className="space-y-1">
-                {Array.from(orderBook.byExchange.values()).map((exchangeOb) => {
-                  const price = calculateSellPrice(exchangeOb.bids, amount);
-                  return (
+          {amounts.map((amount) => {
+            // Calculate prices for all exchanges
+            const exchangePrices = Array.from(orderBook.byExchange.values())
+              .map((exchangeOb) => ({
+                exchange: exchangeOb.exchange,
+                price: calculateSellPrice(exchangeOb.bids, amount),
+              }))
+              // Sort by best price (highest first for selling)
+              .sort((a, b) => {
+                // N/A values go to the end
+                if (a.price === null && b.price === null) return 0;
+                if (a.price === null) return 1;
+                if (b.price === null) return -1;
+                return b.price - a.price;
+              });
+
+            return (
+              <div key={`sell-${amount}`}>
+                <div className="mb-1 text-xs font-medium text-muted-foreground">
+                  {formatUsdt(amount)} USDT
+                </div>
+                <div className="space-y-1">
+                  {exchangePrices.map(({exchange, price}) => (
                     <div
-                      key={`sell-${amount}-${exchangeOb.exchange}`}
+                      key={`sell-${amount}-${exchange}`}
                       className="flex items-center justify-between text-xs"
                     >
-                      <span className="capitalize text-muted-foreground">
-                        {exchangeOb.exchange}
-                      </span>
+                      <span className="capitalize text-muted-foreground">{exchange}</span>
                       <span className="font-mono font-medium">
                         {price ? formatBrl(price) : "N/A"}
                       </span>
                     </div>
-                  );
-                })}
+                  ))}
+                </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </div>
     </div>
