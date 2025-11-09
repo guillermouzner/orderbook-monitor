@@ -12,6 +12,4 @@ export * from "./types";
 
 export {BinanceConnector} from "./binance-connector";
 export {FoxbitConnector} from "./foxbit-connector";
-
-// Future connectors will be exported here:
-// export { MercadoBitcoinConnector } from "./mercadobitcoin-connector";
+export {MercadoBitcoinConnector} from "./mercadobitcoin-connector";
