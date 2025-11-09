@@ -37,7 +37,7 @@ function formatPrice(price: number): string {
 }
 
 /**
- * OrderBookTable displays bids and asks side-by-side
+ * OrderBookTable displays asks on top, spread in middle, and bids on bottom
  */
 export function OrderBookTable({orderBook, maxRows = 10}: OrderBookTableProps) {
   const {exchange, symbol, bids, asks} = orderBook;
@@ -45,6 +45,15 @@ export function OrderBookTable({orderBook, maxRows = 10}: OrderBookTableProps) {
   // Limit rows to display
   const displayBids = bids.slice(0, maxRows);
   const displayAsks = asks.slice(0, maxRows);
+
+  // Reverse asks so lowest price is at bottom (near spread)
+  const reversedAsks = [...displayAsks].reverse();
+
+  // Calculate spread
+  const bestBid = bids[0]?.price || 0;
+  const bestAsk = asks[0]?.price || 0;
+  const spread = bestAsk - bestBid;
+  const spreadPercentage = bestBid > 0 ? (spread / bestBid) * 100 : 0;
 
   return (
     <div className="flex flex-col gap-2">
@@ -54,9 +63,53 @@ export function OrderBookTable({orderBook, maxRows = 10}: OrderBookTableProps) {
         <span className="text-muted-foreground text-sm">{symbol}</span>
       </div>
 
-      {/* Order book grid */}
-      <div className="grid grid-cols-2 gap-4">
-        {/* Bids (Buy orders) */}
+      {/* Vertical layout: Asks → Spread → Bids */}
+      <div className="flex flex-col gap-2">
+        {/* Asks (Sell orders) - Top section */}
+        <div className="flex flex-col">
+          <div className="mb-2 text-sm font-medium text-red-600 dark:text-red-400">Asks (Sell)</div>
+          <div className="space-y-1">
+            {/* Header */}
+            <div className="text-muted-foreground grid grid-cols-2 gap-2 text-xs font-medium">
+              <div className="text-right">Price</div>
+              <div className="text-right">Quantity</div>
+            </div>
+
+            {/* Ask rows - Reversed so lowest price is at bottom */}
+            {reversedAsks.map((ask, index) => (
+              <div
+                key={`ask-${index}`}
+                className="grid grid-cols-2 gap-2 rounded bg-red-50 px-2 py-1 text-xs dark:bg-red-950/20"
+              >
+                <div className="text-right font-mono text-red-700 dark:text-red-400">
+                  {formatPrice(ask.price)}
+                </div>
+                <div className="text-right font-mono">{formatNumber(ask.quantity, 4)}</div>
+              </div>
+            ))}
+
+            {displayAsks.length === 0 && (
+              <div className="text-muted-foreground py-4 text-center text-sm">
+                No asks available
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Spread - Middle section */}
+        <div className="bg-muted/50 rounded border-y px-3 py-2">
+          <div className="flex items-center justify-between text-xs">
+            <span className="text-muted-foreground font-medium">Spread:</span>
+            <div className="flex gap-2">
+              <span className="font-mono font-semibold">{formatPrice(spread)}</span>
+              <span className="text-muted-foreground">
+                ({spreadPercentage.toFixed(2)}%)
+              </span>
+            </div>
+          </div>
+        </div>
+
+        {/* Bids (Buy orders) - Bottom section */}
         <div className="flex flex-col">
           <div className="mb-2 text-sm font-medium text-green-600 dark:text-green-400">
             Bids (Buy)
@@ -68,7 +121,7 @@ export function OrderBookTable({orderBook, maxRows = 10}: OrderBookTableProps) {
               <div className="text-right">Quantity</div>
             </div>
 
-            {/* Bid rows */}
+            {/* Bid rows - Highest price at top */}
             {displayBids.map((bid, index) => (
               <div
                 key={`bid-${index}`}
@@ -84,37 +137,6 @@ export function OrderBookTable({orderBook, maxRows = 10}: OrderBookTableProps) {
             {displayBids.length === 0 && (
               <div className="text-muted-foreground py-4 text-center text-sm">
                 No bids available
-              </div>
-            )}
-          </div>
-        </div>
-
-        {/* Asks (Sell orders) */}
-        <div className="flex flex-col">
-          <div className="mb-2 text-sm font-medium text-red-600 dark:text-red-400">Asks (Sell)</div>
-          <div className="space-y-1">
-            {/* Header */}
-            <div className="text-muted-foreground grid grid-cols-2 gap-2 text-xs font-medium">
-              <div className="text-right">Price</div>
-              <div className="text-right">Quantity</div>
-            </div>
-
-            {/* Ask rows */}
-            {displayAsks.map((ask, index) => (
-              <div
-                key={`ask-${index}`}
-                className="grid grid-cols-2 gap-2 rounded bg-red-50 px-2 py-1 text-xs dark:bg-red-950/20"
-              >
-                <div className="text-right font-mono text-red-700 dark:text-red-400">
-                  {formatPrice(ask.price)}
-                </div>
-                <div className="text-right font-mono">{formatNumber(ask.quantity, 4)}</div>
-              </div>
-            ))}
-
-            {displayAsks.length === 0 && (
-              <div className="text-muted-foreground py-4 text-center text-sm">
-                No asks available
               </div>
             )}
           </div>

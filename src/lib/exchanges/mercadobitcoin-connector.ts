@@ -257,13 +257,13 @@ export class MercadoBitcoinConnector implements IExchangeConnector {
       }
 
       // Handle ping response
-      if (message.type === "pong") {
+      if ("type" in message && message.type === "pong") {
         // Ping successful, no action needed
         return;
       }
 
       // Handle error
-      if (message.type === "error") {
+      if ("type" in message && message.type === "error") {
         console.error(`[${this.exchange}] Server error:`, message.message);
         this._emit({
           type: ConnectorEventType.ERROR,
@@ -275,7 +275,7 @@ export class MercadoBitcoinConnector implements IExchangeConnector {
       }
 
       // Handle orderbook update
-      if (message.type === "orderbook" && message.data) {
+      if ("type" in message && message.type === "orderbook" && message.data) {
         this._processOrderbookData(message);
         return;
       }
