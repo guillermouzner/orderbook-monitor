@@ -190,15 +190,21 @@ export function toExchangeSymbol(
   symbol: string,
   toFormat: "binance" | "foxbit" | "mercadobitcoin",
 ): string {
+  console.log("[toExchangeSymbol] Input:", {symbol, toFormat});
+
   // Remove separators
   const clean = symbol.replace(/[/-_]/g, "").toUpperCase();
+  console.log("[toExchangeSymbol] After cleaning:", clean);
 
   if (toFormat === "binance") {
     // Binance uses format like "BTCUSDT" (no separator)
-    return clean.toLowerCase();
+    const result = clean.toLowerCase();
+    console.log("[toExchangeSymbol] Binance format result:", result);
+    return result;
   }
 
   // Add other exchange formats as needed
+  console.log("[toExchangeSymbol] Default format result:", clean);
   return clean;
 }
 
