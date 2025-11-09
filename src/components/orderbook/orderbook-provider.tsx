@@ -60,7 +60,7 @@ interface OrderBookProviderProps {
  */
 export function OrderBookProvider({
   children,
-  symbol = "BTC/USDT",
+  symbol = "USDT/BRL",
   depth = 20,
   autoConnect = true,
 }: OrderBookProviderProps) {
@@ -94,11 +94,11 @@ export function OrderBookProvider({
 
   // Initialize manager and register connectors
   useEffect(() => {
-    console.log("[OrderBookProvider] Initializing...");
+    console.log("[OrderBookProvider] Initializing with symbol:", symbol);
 
     // Register Binance connector
     const binanceConnector = new BinanceConnector({
-      symbol,
+      symbol, // Use the symbol prop from provider
       depth,
       reconnect: {
         enabled: true,
@@ -111,9 +111,8 @@ export function OrderBookProvider({
     manager.registerConnector(binanceConnector);
 
     // Register FoxBit connector
-    // Note: FoxBit uses BRL (Brazilian Real), so we use BTC/BRL
     const foxbitConnector = new FoxbitConnector({
-      symbol: "BTC/BRL",
+      symbol, // Use the same symbol prop from provider
       depth,
       reconnect: {
         enabled: true,
