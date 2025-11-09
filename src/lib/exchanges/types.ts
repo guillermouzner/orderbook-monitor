@@ -195,7 +195,12 @@ export function toExchangeSymbol(
   const clean = symbol.replace(/[/\-_]/g, "").toUpperCase();
 
   if (toFormat === "binance") {
-    // Binance uses format like "BTCUSDT" (no separator)
+    // Binance uses format like "btcusdt" (no separator, lowercase)
+    return clean.toLowerCase();
+  }
+
+  if (toFormat === "foxbit") {
+    // FoxBit uses format like "btcbrl" (no separator, lowercase)
     return clean.toLowerCase();
   }
 
