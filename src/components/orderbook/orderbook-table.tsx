@@ -67,7 +67,6 @@ export function OrderBookTable({orderBook, maxRows = 10}: OrderBookTableProps) {
       <div className="flex flex-col gap-2">
         {/* Asks (Sell orders) - Top section */}
         <div className="flex flex-col">
-          <div className="mb-2 text-sm font-medium text-red-600 dark:text-red-400">Asks (Sell)</div>
           <div className="space-y-1">
             {/* Header */}
             <div className="text-muted-foreground grid grid-cols-2 gap-2 text-xs font-medium">
@@ -111,9 +110,6 @@ export function OrderBookTable({orderBook, maxRows = 10}: OrderBookTableProps) {
 
         {/* Bids (Buy orders) - Bottom section */}
         <div className="flex flex-col">
-          <div className="mb-2 text-sm font-medium text-green-600 dark:text-green-400">
-            Bids (Buy)
-          </div>
           <div className="space-y-1">
             {/* Header */}
             <div className="text-muted-foreground grid grid-cols-2 gap-2 text-xs font-medium">
