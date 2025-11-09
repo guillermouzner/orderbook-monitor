@@ -101,7 +101,9 @@ export class BinanceConnector implements IExchangeConnector {
     this._setStatus(ConnectionStatus.CONNECTING);
 
     try {
+      console.log(`[${this.exchange}] Config symbol:`, this._config.symbol);
       const symbol = toExchangeSymbol(this._config.symbol, "binance");
+      console.log(`[${this.exchange}] Converted symbol for Binance:`, symbol);
       // Binance depth stream: wss://stream.binance.com:9443/ws/<symbol>@depth<levels>@100ms
       // Using @depth20 for top 20 levels, updated every 100ms
       const url = `wss://stream.binance.com:9443/ws/${symbol}@depth20@100ms`;
