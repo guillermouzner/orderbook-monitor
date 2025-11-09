@@ -40,87 +40,93 @@ export function OrderBookViewer({maxRows = 10}: OrderBookViewerProps) {
   const hasOrderBooks = orderBook && orderBook.byExchange.size > 0;
 
   return (
-    <div className="flex h-full flex-col gap-4">
-      {/* Header with controls */}
-      <div className="flex items-center justify-between">
-        <div>
+    <div className="flex h-full gap-4">
+      {/* Sidebar - 1/4 de la pantalla */}
+      <div className="flex w-1/4 flex-col gap-4">
+        {/* Header con título */}
+        <div className="rounded-lg border bg-card p-6">
           <h1 className="text-2xl font-bold">Multi-Exchange Order Book</h1>
-          <p className="text-muted-foreground text-sm">
+          <p className="text-muted-foreground mt-2 text-sm">
             Real-time order book data from multiple exchanges
           </p>
-        </div>
 
-        <div className="flex gap-2">
-          {hasConnections ? (
-            <Button size="sm" variant="outline" onClick={disconnect}>
-              Disconnect
-            </Button>
-          ) : (
-            <Button size="sm" onClick={connect}>
-              Connect
-            </Button>
-          )}
-        </div>
-      </div>
-
-      {/* Errors display */}
-      {errors.length > 0 && (
-        <div className="rounded-lg border border-red-200 bg-red-50 p-4 dark:border-red-900 dark:bg-red-950/20">
-          <div className="mb-2 flex items-center justify-between">
-            <h3 className="text-sm font-semibold text-red-800 dark:text-red-400">
-              Errors ({errors.length})
-            </h3>
-            <Button className="h-auto p-1 text-xs" size="sm" variant="ghost" onClick={clearErrors}>
-              Clear
-            </Button>
-          </div>
-          <div className="space-y-1">
-            {errors.slice(0, 5).map((error, index) => (
-              <div key={`error-${index}`} className="text-xs text-red-700 dark:text-red-400">
-                [{error.exchange}] {error.message}
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* Status indicator */}
-      {status && <ConnectionStatusIndicator status={status} />}
-
-      {/* Order books grid */}
-      {hasOrderBooks ? (
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {Array.from(orderBook.byExchange.values()).map((exchangeOrderBook) => (
-            <div key={exchangeOrderBook.exchange} className="bg-card rounded-lg border p-4">
-              <OrderBookTable maxRows={maxRows} orderBook={exchangeOrderBook} />
-            </div>
-          ))}
-        </div>
-      ) : (
-        <div className="flex flex-1 items-center justify-center rounded-lg border border-dashed">
-          <div className="text-center">
-            <div className="mb-2 text-lg font-semibold">No Order Book Data</div>
-            <div className="text-muted-foreground mb-4 text-sm">
-              {hasConnections
-                ? "Waiting for data from exchanges..."
-                : "Connect to exchanges to view order books"}
-            </div>
-            {!hasConnections && (
+          {/* Controls */}
+          <div className="mt-6 flex flex-col gap-2">
+            {hasConnections ? (
+              <Button size="sm" variant="outline" onClick={disconnect}>
+                Disconnect
+              </Button>
+            ) : (
               <Button size="sm" onClick={connect}>
-                Connect Now
+                Connect
               </Button>
             )}
           </div>
         </div>
-      )}
 
-      {/* Footer info */}
-      {orderBook && (
-        <div className="text-muted-foreground text-center text-xs">
-          Last update: {new Date(orderBook.lastUpdate).toLocaleTimeString()} · Symbol:{" "}
-          {orderBook.symbol}
-        </div>
-      )}
+        {/* Status indicator */}
+        {status && <ConnectionStatusIndicator status={status} />}
+
+        {/* Errors display */}
+        {errors.length > 0 && (
+          <div className="rounded-lg border border-red-200 bg-red-50 p-4 dark:border-red-900 dark:bg-red-950/20">
+            <div className="mb-2 flex items-center justify-between">
+              <h3 className="text-sm font-semibold text-red-800 dark:text-red-400">
+                Errors ({errors.length})
+              </h3>
+              <Button className="h-auto p-1 text-xs" size="sm" variant="ghost" onClick={clearErrors}>
+                Clear
+              </Button>
+            </div>
+            <div className="space-y-1">
+              {errors.slice(0, 5).map((error, index) => (
+                <div key={`error-${index}`} className="text-xs text-red-700 dark:text-red-400">
+                  [{error.exchange}] {error.message}
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Footer info */}
+        {orderBook && (
+          <div className="text-muted-foreground rounded-lg border bg-card p-4 text-xs">
+            <div className="font-semibold mb-1">Status</div>
+            <div>Last update: {new Date(orderBook.lastUpdate).toLocaleTimeString()}</div>
+            <div>Symbol: {orderBook.symbol}</div>
+          </div>
+        )}
+      </div>
+
+      {/* Main content - 3/4 de la pantalla con orderbooks */}
+      <div className="flex w-3/4 flex-col">
+        {/* Order books grid - 2 columnas por fila */}
+        {hasOrderBooks ? (
+          <div className="grid gap-4 grid-cols-2">
+            {Array.from(orderBook.byExchange.values()).map((exchangeOrderBook) => (
+              <div key={exchangeOrderBook.exchange} className="bg-card rounded-lg border p-4">
+                <OrderBookTable maxRows={maxRows} orderBook={exchangeOrderBook} />
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="flex flex-1 items-center justify-center rounded-lg border border-dashed">
+            <div className="text-center">
+              <div className="mb-2 text-lg font-semibold">No Order Book Data</div>
+              <div className="text-muted-foreground mb-4 text-sm">
+                {hasConnections
+                  ? "Waiting for data from exchanges..."
+                  : "Connect to exchanges to view order books"}
+              </div>
+              {!hasConnections && (
+                <Button size="sm" onClick={connect}>
+                  Connect Now
+                </Button>
+              )}
+            </div>
+          </div>
+        )}
+      </div>
     </div>
   );
 }
