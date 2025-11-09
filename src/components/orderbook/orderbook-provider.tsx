@@ -14,7 +14,7 @@ import {
   type ConsolidatedOrderBook,
   type ManagerStatus,
 } from "@/lib/orderbook-manager";
-import {BinanceConnector, FoxbitConnector} from "@/lib/exchanges";
+import {BinanceConnector, FoxbitConnector, MercadoBitcoinConnector} from "@/lib/exchanges";
 
 /**
  * Context value interface
@@ -123,6 +123,20 @@ export function OrderBookProvider({
     });
 
     manager.registerConnector(foxbitConnector);
+
+    // Register MercadoBitcoin connector
+    const mercadoBitcoinConnector = new MercadoBitcoinConnector({
+      symbol, // Use the same symbol prop from provider
+      depth,
+      reconnect: {
+        enabled: true,
+        maxAttempts: 5,
+        delayMs: 1000,
+        backoffMultiplier: 1.5,
+      },
+    });
+
+    manager.registerConnector(mercadoBitcoinConnector);
 
     // Subscribe to manager events
     const unsubOrderBook = manager.onOrderBookUpdate((data) => {

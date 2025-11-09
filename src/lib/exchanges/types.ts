@@ -204,6 +204,23 @@ export function toExchangeSymbol(
     return clean.toLowerCase();
   }
 
+  if (toFormat === "mercadobitcoin") {
+    // MercadoBitcoin uses format like "BRLBTC" (inverted order, uppercase)
+    // Example: "BTC/BRL" → "BTCBRL" → "BRLBTC"
+    //          "USDT/BRL" → "USDTBRL" → "BRLUSDT"
+
+    // Split the original symbol to get base and quote
+    const parts = symbol.split(/[/\-_]/);
+    if (parts.length === 2) {
+      const [base, quote] = parts;
+      // Invert: quote first, then base
+      return (quote + base).toUpperCase();
+    }
+
+    // If can't split, just return uppercase (fallback)
+    return clean.toUpperCase();
+  }
+
   // Add other exchange formats as needed
   return clean;
 }
