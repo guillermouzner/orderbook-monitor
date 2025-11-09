@@ -43,29 +43,12 @@ export function OrderBookViewer({maxRows = 10}: OrderBookViewerProps) {
     <div className="flex h-full gap-4">
       {/* Sidebar - 1/4 de la pantalla */}
       <div className="flex w-1/4 flex-col gap-4">
-        {/* Header con título */}
-        <div className="rounded-lg border bg-card p-6">
-          <h1 className="text-2xl font-bold">Multi-Exchange Order Book</h1>
-          <p className="text-muted-foreground mt-2 text-sm">
-            Real-time order book data from multiple exchanges
-          </p>
-
-          {/* Controls */}
-          <div className="mt-6 flex flex-col gap-2">
-            {hasConnections ? (
-              <Button size="sm" variant="outline" onClick={disconnect}>
-                Disconnect
-              </Button>
-            ) : (
-              <Button size="sm" onClick={connect}>
-                Connect
-              </Button>
-            )}
+        {/* Status indicator - compacto */}
+        {status && (
+          <div className="rounded-lg border bg-card p-3">
+            <ConnectionStatusIndicator status={status} />
           </div>
-        </div>
-
-        {/* Status indicator */}
-        {status && <ConnectionStatusIndicator status={status} />}
+        )}
 
         {/* Errors display */}
         {errors.length > 0 && (
@@ -85,15 +68,6 @@ export function OrderBookViewer({maxRows = 10}: OrderBookViewerProps) {
                 </div>
               ))}
             </div>
-          </div>
-        )}
-
-        {/* Footer info */}
-        {orderBook && (
-          <div className="text-muted-foreground rounded-lg border bg-card p-4 text-xs">
-            <div className="font-semibold mb-1">Status</div>
-            <div>Last update: {new Date(orderBook.lastUpdate).toLocaleTimeString()}</div>
-            <div>Symbol: {orderBook.symbol}</div>
           </div>
         )}
       </div>

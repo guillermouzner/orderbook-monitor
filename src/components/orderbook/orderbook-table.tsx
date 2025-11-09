@@ -58,13 +58,10 @@ export function OrderBookTable({orderBook, maxRows = 10}: OrderBookTableProps) {
       <div className="grid grid-cols-2 gap-4">
         {/* Bids (Buy orders) */}
         <div className="flex flex-col">
-          <div className="mb-2 text-sm font-medium text-green-600 dark:text-green-400">
-            Bids (Buy)
-          </div>
           <div className="space-y-1">
             {/* Header */}
             <div className="text-muted-foreground grid grid-cols-2 gap-2 text-xs font-medium">
-              <div className="text-right">Price</div>
+              <div className="text-left">Price</div>
               <div className="text-right">Quantity</div>
             </div>
 
@@ -74,7 +71,7 @@ export function OrderBookTable({orderBook, maxRows = 10}: OrderBookTableProps) {
                 key={`bid-${index}`}
                 className="grid grid-cols-2 gap-2 rounded bg-green-50 px-2 py-1 text-xs dark:bg-green-950/20"
               >
-                <div className="text-right font-mono text-green-700 dark:text-green-400">
+                <div className="text-left font-mono text-green-700 dark:text-green-400">
                   {formatPrice(bid.price)}
                 </div>
                 <div className="text-right font-mono">{formatNumber(bid.quantity, 4)}</div>
@@ -91,11 +88,10 @@ export function OrderBookTable({orderBook, maxRows = 10}: OrderBookTableProps) {
 
         {/* Asks (Sell orders) */}
         <div className="flex flex-col">
-          <div className="mb-2 text-sm font-medium text-red-600 dark:text-red-400">Asks (Sell)</div>
           <div className="space-y-1">
             {/* Header */}
             <div className="text-muted-foreground grid grid-cols-2 gap-2 text-xs font-medium">
-              <div className="text-right">Price</div>
+              <div className="text-left">Price</div>
               <div className="text-right">Quantity</div>
             </div>
 
@@ -105,7 +101,7 @@ export function OrderBookTable({orderBook, maxRows = 10}: OrderBookTableProps) {
                 key={`ask-${index}`}
                 className="grid grid-cols-2 gap-2 rounded bg-red-50 px-2 py-1 text-xs dark:bg-red-950/20"
               >
-                <div className="text-right font-mono text-red-700 dark:text-red-400">
+                <div className="text-left font-mono text-red-700 dark:text-red-400">
                   {formatPrice(ask.price)}
                 </div>
                 <div className="text-right font-mono">{formatNumber(ask.quantity, 4)}</div>
