@@ -8,7 +8,7 @@ export default function HomePage() {
         <ModeToggle />
       </div>
 
-      <OrderBookProvider autoConnect={true} depth={20} symbol="BTC/USDT">
+      <OrderBookProvider autoConnect={true} depth={20} symbol="USDT/BRL">
         <OrderBookViewer maxRows={10} />
       </OrderBookProvider>
     </main>
