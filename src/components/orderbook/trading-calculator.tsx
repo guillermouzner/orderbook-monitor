@@ -82,6 +82,19 @@ function formatUsdt(amount: number): string {
 }
 
 /**
+ * Format price per USDT
+ */
+function formatPricePerUsdt(totalBrl: number, usdtAmount: number): string {
+  const pricePerUsdt = totalBrl / usdtAmount;
+  return new Intl.NumberFormat("pt-BR", {
+    style: "currency",
+    currency: "BRL",
+    minimumFractionDigits: 4,
+    maximumFractionDigits: 4,
+  }).format(pricePerUsdt);
+}
+
+/**
  * TradingCalculator shows buy/sell calculations for different USDT amounts
  */
 export function TradingCalculator({orderBook}: TradingCalculatorProps) {
@@ -130,12 +143,19 @@ export function TradingCalculator({orderBook}: TradingCalculatorProps) {
                   {exchangePrices.map(({exchange, price}) => (
                     <div
                       key={`buy-${amount}-${exchange}`}
-                      className="flex items-center justify-between text-xs"
+                      className="flex items-center justify-between gap-2 text-xs"
                     >
                       <span className="capitalize text-muted-foreground">{exchange}</span>
-                      <span className="font-mono font-medium">
-                        {price ? formatBrl(price) : "N/A"}
-                      </span>
+                      <div className="flex flex-col items-end">
+                        <span className="font-mono font-medium">
+                          {price ? formatBrl(price) : "N/A"}
+                        </span>
+                        {price && (
+                          <span className="font-mono text-[10px] text-muted-foreground">
+                            {formatPricePerUsdt(price, amount)}
+                          </span>
+                        )}
+                      </div>
                     </div>
                   ))}
                 </div>
@@ -176,12 +196,19 @@ export function TradingCalculator({orderBook}: TradingCalculatorProps) {
                   {exchangePrices.map(({exchange, price}) => (
                     <div
                       key={`sell-${amount}-${exchange}`}
-                      className="flex items-center justify-between text-xs"
+                      className="flex items-center justify-between gap-2 text-xs"
                     >
                       <span className="capitalize text-muted-foreground">{exchange}</span>
-                      <span className="font-mono font-medium">
-                        {price ? formatBrl(price) : "N/A"}
-                      </span>
+                      <div className="flex flex-col items-end">
+                        <span className="font-mono font-medium">
+                          {price ? formatBrl(price) : "N/A"}
+                        </span>
+                        {price && (
+                          <span className="font-mono text-[10px] text-muted-foreground">
+                            {formatPricePerUsdt(price, amount)}
+                          </span>
+                        )}
+                      </div>
                     </div>
                   ))}
                 </div>
