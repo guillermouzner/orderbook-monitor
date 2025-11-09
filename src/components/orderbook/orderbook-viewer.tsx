@@ -12,6 +12,7 @@ import {useOrderBook} from "./orderbook-provider";
 import {OrderBookTable} from "./orderbook-table";
 import {ConnectionStatusIndicator} from "./connection-status";
 import {TradingCalculator} from "./trading-calculator";
+import {ExchangeFees} from "./exchange-fees";
 
 interface OrderBookViewerProps {
   /** Maximum rows to display per order book side */
@@ -70,6 +71,11 @@ export function OrderBookViewer({maxRows = 10}: OrderBookViewerProps) {
 
         {/* Spacer para empujar el status hacia abajo */}
         <div className="flex-1" />
+
+        {/* Exchange Fees */}
+        <div className="rounded-lg border bg-card p-3">
+          <ExchangeFees />
+        </div>
 
         {/* Status indicator - Footer */}
         {status && (
