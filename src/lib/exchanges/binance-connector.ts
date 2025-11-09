@@ -88,10 +88,13 @@ export class BinanceConnector implements IExchangeConnector {
    * Connect to Binance WebSocket
    */
   public async connect(): Promise<void> {
+    console.log(`[${this.exchange}] connect() called, current status:`, this._status);
+
     if (
       this._status === ConnectionStatus.CONNECTED ||
       this._status === ConnectionStatus.CONNECTING
     ) {
+      console.log(`[${this.exchange}] Already connected or connecting, skipping`);
       return;
     }
 
@@ -103,25 +106,34 @@ export class BinanceConnector implements IExchangeConnector {
       // Using @depth20 for top 20 levels, updated every 100ms
       const url = `wss://stream.binance.com:9443/ws/${symbol}@depth20@100ms`;
 
+      console.log(`[${this.exchange}] Connecting to:`, url);
+
       this._ws = new WebSocket(url);
+
+      console.log(`[${this.exchange}] WebSocket object created, readyState:`, this._ws.readyState);
 
       this._ws.onopen = this._handleOpen.bind(this);
       this._ws.onmessage = this._handleMessage.bind(this);
       this._ws.onerror = this._handleError.bind(this);
       this._ws.onclose = this._handleClose.bind(this);
 
+      console.log(`[${this.exchange}] Event handlers attached`);
+
       // Wait for connection to be established
       await new Promise<void>((resolve, reject) => {
         const timeout = setTimeout(() => {
+          console.error(`[${this.exchange}] Connection timeout after 10 seconds`);
           reject(new Error("Connection timeout"));
         }, 10000);
 
         const checkConnection = () => {
           if (this._status === ConnectionStatus.CONNECTED) {
             clearTimeout(timeout);
+            console.log(`[${this.exchange}] Connection established successfully`);
             resolve();
           } else if (this._status === ConnectionStatus.ERROR) {
             clearTimeout(timeout);
+            console.error(`[${this.exchange}] Connection failed with error status`);
             reject(new Error("Connection failed"));
           } else {
             setTimeout(checkConnection, 100);
@@ -131,6 +143,7 @@ export class BinanceConnector implements IExchangeConnector {
         checkConnection();
       });
     } catch (error) {
+      console.error(`[${this.exchange}] Connect error:`, error);
       this._setStatus(ConnectionStatus.ERROR, `Failed to connect: ${error}`);
       this._scheduleReconnect();
       throw error;
@@ -195,7 +208,7 @@ export class BinanceConnector implements IExchangeConnector {
    * Handle WebSocket open event
    */
   private _handleOpen(): void {
-    console.log(`[${this.exchange}] WebSocket connected`);
+    console.log(`[${this.exchange}] ✓ WebSocket OPEN event fired - connection established!`);
     this._setStatus(ConnectionStatus.CONNECTED);
     this._reconnectAttempts = 0;
   }
@@ -204,10 +217,12 @@ export class BinanceConnector implements IExchangeConnector {
    * Handle WebSocket message event
    */
   private _handleMessage(event: MessageEvent): void {
+    console.log(`[${this.exchange}] ✓ MESSAGE event fired! Raw data:`, event.data);
+
     try {
       const data = JSON.parse(event.data);
 
-      console.log("[binance] Received data:", data);
+      console.log(`[${this.exchange}] Parsed data:`, data);
 
       // Check if it's a depth update message (differential) or partial depth (snapshot)
       const isDepthUpdate = "e" in data && data.e === "depthUpdate";
@@ -283,7 +298,8 @@ export class BinanceConnector implements IExchangeConnector {
    * Handle WebSocket error event
    */
   private _handleError(event: Event): void {
-    console.error(`[${this.exchange}] WebSocket error:`, event);
+    console.error(`[${this.exchange}] ✗ ERROR event fired:`, event);
+    console.error(`[${this.exchange}] WebSocket readyState:`, this._ws?.readyState);
     this._emit({
       type: ConnectorEventType.ERROR,
       exchange: this.exchange,
@@ -296,7 +312,7 @@ export class BinanceConnector implements IExchangeConnector {
    * Handle WebSocket close event
    */
   private _handleClose(event: CloseEvent): void {
-    console.log(`[${this.exchange}] WebSocket closed:`, event.code, event.reason);
+    console.log(`[${this.exchange}] ✗ CLOSE event fired - Code: ${event.code}, Reason: "${event.reason}", Clean: ${event.wasClean}`);
 
     if (this._status !== ConnectionStatus.DISCONNECTED) {
       this._setStatus(ConnectionStatus.DISCONNECTED, event.reason);
@@ -358,7 +374,10 @@ export class BinanceConnector implements IExchangeConnector {
       return;
     }
 
+    const oldStatus = this._status;
     this._status = status;
+
+    console.log(`[${this.exchange}] Status changed: ${oldStatus} → ${status}`, message ? `(${message})` : "");
 
     this._emit({
       type: ConnectorEventType.STATUS_CHANGE,
