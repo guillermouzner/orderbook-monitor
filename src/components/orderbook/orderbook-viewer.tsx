@@ -11,6 +11,7 @@ import {Button} from "@/components/ui/button";
 import {useOrderBook} from "./orderbook-provider";
 import {OrderBookTable} from "./orderbook-table";
 import {ConnectionStatusIndicator} from "./connection-status";
+import {TradingCalculator} from "./trading-calculator";
 
 interface OrderBookViewerProps {
   /** Maximum rows to display per order book side */
@@ -43,12 +44,8 @@ export function OrderBookViewer({maxRows = 10}: OrderBookViewerProps) {
     <div className="flex h-full gap-4">
       {/* Sidebar - 1/4 de la pantalla */}
       <div className="flex w-1/4 flex-col gap-4">
-        {/* Status indicator - compacto */}
-        {status && (
-          <div className="rounded-lg border bg-card p-3">
-            <ConnectionStatusIndicator status={status} />
-          </div>
-        )}
+        {/* Trading Calculator - Principal */}
+        <TradingCalculator orderBook={orderBook} />
 
         {/* Errors display */}
         {errors.length > 0 && (
@@ -68,6 +65,16 @@ export function OrderBookViewer({maxRows = 10}: OrderBookViewerProps) {
                 </div>
               ))}
             </div>
+          </div>
+        )}
+
+        {/* Spacer para empujar el status hacia abajo */}
+        <div className="flex-1" />
+
+        {/* Status indicator - Footer */}
+        {status && (
+          <div className="rounded-lg border bg-card p-3">
+            <ConnectionStatusIndicator status={status} />
           </div>
         )}
       </div>
