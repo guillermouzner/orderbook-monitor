@@ -20,7 +20,7 @@ import {
 } from "./types";
 
 /**
- * Binance-specific order book message format
+ * Binance-specific order book message format for depth updates
  */
 interface BinanceDepthUpdate {
   e: string; // Event type
@@ -30,6 +30,15 @@ interface BinanceDepthUpdate {
   u: number; // Final update ID in event
   b: [string, string][]; // Bids to be updated [price, quantity]
   a: [string, string][]; // Asks to be updated [price, quantity]
+}
+
+/**
+ * Binance-specific partial book depth message format
+ */
+interface BinancePartialDepth {
+  lastUpdateId: number; // Last update ID
+  bids: [string, string][]; // Bids [price, quantity]
+  asks: [string, string][]; // Asks [price, quantity]
 }
 
 /**
@@ -196,29 +205,56 @@ export class BinanceConnector implements IExchangeConnector {
    */
   private _handleMessage(event: MessageEvent): void {
     try {
-      const data = JSON.parse(event.data) as BinanceDepthUpdate;
+      const data = JSON.parse(event.data);
 
-      console.log("data", data);
+      console.log("[binance] Received data:", data);
 
-      if (data.e !== "depthUpdate") {
+      // Check if it's a depth update message (differential) or partial depth (snapshot)
+      const isDepthUpdate = "e" in data && data.e === "depthUpdate";
+      const isPartialDepth = "lastUpdateId" in data && "bids" in data && "asks" in data;
+
+      if (!isDepthUpdate && !isPartialDepth) {
+        console.warn(`[${this.exchange}] Unknown message format:`, data);
         return;
       }
 
-      // Convert Binance format to normalized format
-      const orderBook: OrderBook = {
-        exchange: this.exchange,
-        symbol: this._config.symbol,
-        bids: data.b.map(([price, quantity]) => ({
-          price: parseFloat(price),
-          quantity: parseFloat(quantity),
-        })),
-        asks: data.a.map(([price, quantity]) => ({
-          price: parseFloat(price),
-          quantity: parseFloat(quantity),
-        })),
-        timestamp: Date.now(),
-        sequenceId: data.u,
-      };
+      let orderBook: OrderBook;
+
+      if (isDepthUpdate) {
+        // Handle differential depth update
+        const depthData = data as BinanceDepthUpdate;
+        orderBook = {
+          exchange: this.exchange,
+          symbol: this._config.symbol,
+          bids: depthData.b.map(([price, quantity]) => ({
+            price: parseFloat(price),
+            quantity: parseFloat(quantity),
+          })),
+          asks: depthData.a.map(([price, quantity]) => ({
+            price: parseFloat(price),
+            quantity: parseFloat(quantity),
+          })),
+          timestamp: Date.now(),
+          sequenceId: depthData.u,
+        };
+      } else {
+        // Handle partial depth snapshot
+        const partialData = data as BinancePartialDepth;
+        orderBook = {
+          exchange: this.exchange,
+          symbol: this._config.symbol,
+          bids: partialData.bids.map(([price, quantity]) => ({
+            price: parseFloat(price),
+            quantity: parseFloat(quantity),
+          })),
+          asks: partialData.asks.map(([price, quantity]) => ({
+            price: parseFloat(price),
+            quantity: parseFloat(quantity),
+          })),
+          timestamp: Date.now(),
+          sequenceId: partialData.lastUpdateId,
+        };
+      }
 
       // Apply depth limit if configured
       if (this._config.depth) {
