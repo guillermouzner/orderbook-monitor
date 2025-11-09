@@ -64,6 +64,12 @@ const DEFAULT_CONFIG: ConnectorConfig = {
  *
  * This class manages WebSocket connection to FoxBit's order book stream,
  * handles subscription, ping/pong, reconnection logic, and normalizes data.
+ *
+ * FoxBit uses incremental updates:
+ * 1. Fetch initial snapshot from REST API
+ * 2. Apply incremental updates from WebSocket
+ * 3. If quantity = 0, remove that price level
+ * 4. If quantity != 0, update/add that price level
  */
 export class FoxbitConnector implements IExchangeConnector {
   public readonly exchange = "foxbit";
@@ -76,6 +82,10 @@ export class FoxbitConnector implements IExchangeConnector {
   private _reconnectAttempts = 0;
   private _reconnectTimeout: NodeJS.Timeout | null = null;
   private _pingInterval: NodeJS.Timeout | null = null;
+
+  // In-memory orderbook state for incremental updates
+  private _bidsMap = new Map<string, string>(); // price -> quantity
+  private _asksMap = new Map<string, string>(); // price -> quantity
 
   constructor(config?: Partial<ConnectorConfig>) {
     this._config = {...DEFAULT_CONFIG, ...config};
@@ -169,6 +179,9 @@ export class FoxbitConnector implements IExchangeConnector {
       this._ws = null;
     }
 
+    // Clear orderbook state
+    this._bidsMap.clear();
+    this._asksMap.clear();
     this._setStatus(ConnectionStatus.DISCONNECTED);
     this._orderBook = null;
     this._reconnectAttempts = 0;
@@ -207,10 +220,13 @@ export class FoxbitConnector implements IExchangeConnector {
   /**
    * Handle WebSocket open event
    */
-  private _handleOpen(): void {
+  private async _handleOpen(): Promise<void> {
     console.log(`[${this.exchange}] WebSocket connected`);
     this._setStatus(ConnectionStatus.CONNECTED);
     this._reconnectAttempts = 0;
+
+    // Fetch initial orderbook snapshot from REST API
+    await this._fetchInitialSnapshot();
 
     // Subscribe to orderbook
     this._subscribeToOrderbook();
@@ -273,22 +289,112 @@ export class FoxbitConnector implements IExchangeConnector {
   }
 
   /**
+   * Fetch initial orderbook snapshot from REST API
+   */
+  private async _fetchInitialSnapshot(): Promise<void> {
+    try {
+      const symbol = toExchangeSymbol(this._config.symbol, "foxbit");
+      const url = `https://api.foxbit.com.br/rest/v3/markets/${symbol}/orderbook?depth=100`;
+
+      console.log(`[${this.exchange}] Fetching initial snapshot from:`, url);
+
+      const response = await fetch(url);
+
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+      }
+
+      const data = (await response.json()) as FoxbitOrderbookData & {
+        sequence_id: number;
+        timestamp: number;
+      };
+
+      console.log(`[${this.exchange}] Initial snapshot received, sequence_id:`, data.sequence_id);
+
+      // Initialize Maps with snapshot data
+      this._bidsMap.clear();
+      this._asksMap.clear();
+
+      data.bids.forEach(([price, quantity]) => {
+        if (quantity !== "0") {
+          this._bidsMap.set(price, quantity);
+        }
+      });
+
+      data.asks.forEach(([price, quantity]) => {
+        if (quantity !== "0") {
+          this._asksMap.set(price, quantity);
+        }
+      });
+
+      // Build and emit initial orderbook
+      this._buildAndEmitOrderBook(data.timestamp, data.sequence_id);
+    } catch (error) {
+      console.error(`[${this.exchange}] Failed to fetch initial snapshot:`, error);
+      this._emit({
+        type: ConnectorEventType.ERROR,
+        exchange: this.exchange,
+        error: error as Error,
+        message: `Failed to fetch initial snapshot: ${error}`,
+      });
+    }
+  }
+
+  /**
    * Process orderbook data (snapshot or update)
    */
   private _processOrderbookData(data: FoxbitOrderbookData): void {
+    // Apply incremental updates to the Maps
+    data.bids?.forEach(([price, quantity]) => {
+      if (quantity === "0") {
+        // Remove price level
+        this._bidsMap.delete(price);
+      } else {
+        // Update/add price level
+        this._bidsMap.set(price, quantity);
+      }
+    });
+
+    data.asks?.forEach(([price, quantity]) => {
+      if (quantity === "0") {
+        // Remove price level
+        this._asksMap.delete(price);
+      } else {
+        // Update/add price level
+        this._asksMap.set(price, quantity);
+      }
+    });
+
+    // Build and emit updated orderbook
+    this._buildAndEmitOrderBook(data.ts || Date.now(), data.last_sequence_id || data.sequence_id);
+  }
+
+  /**
+   * Build OrderBook from Maps and emit update
+   */
+  private _buildAndEmitOrderBook(timestamp: number, sequenceId?: number): void {
+    // Convert Maps to arrays
+    const bidsArray: [string, string][] = Array.from(this._bidsMap.entries());
+    const asksArray: [string, string][] = Array.from(this._asksMap.entries());
+
+    // Sort: bids descending (highest price first), asks ascending (lowest price first)
+    bidsArray.sort((a, b) => parseFloat(b[0]) - parseFloat(a[0]));
+    asksArray.sort((a, b) => parseFloat(a[0]) - parseFloat(b[0]));
+
+    // Build OrderBook object
     const orderBook: OrderBook = {
       exchange: this.exchange,
       symbol: this._config.symbol,
-      bids: data.bids.map(([price, quantity]) => ({
+      bids: bidsArray.map(([price, quantity]) => ({
         price: parseFloat(price),
         quantity: parseFloat(quantity),
       })),
-      asks: data.asks.map(([price, quantity]) => ({
+      asks: asksArray.map(([price, quantity]) => ({
         price: parseFloat(price),
         quantity: parseFloat(quantity),
       })),
-      timestamp: data.ts || Date.now(),
-      sequenceId: data.last_sequence_id || data.sequence_id,
+      timestamp,
+      sequenceId,
     };
 
     // Apply depth limit if configured
