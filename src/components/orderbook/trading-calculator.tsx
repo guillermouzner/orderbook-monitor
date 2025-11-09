@@ -145,17 +145,17 @@ export function TradingCalculator({orderBook}: TradingCalculatorProps) {
                       key={`buy-${amount}-${exchange}`}
                       className="flex items-center justify-between gap-2 text-xs"
                     >
-                      <span className="capitalize text-muted-foreground">{exchange}</span>
-                      <div className="flex flex-col items-end">
-                        <span className="font-mono font-medium">
-                          {price ? formatBrl(price) : "N/A"}
-                        </span>
+                      <div className="flex items-center gap-2">
+                        <span className="capitalize text-muted-foreground">{exchange}</span>
                         {price && (
                           <span className="font-mono text-[10px] text-muted-foreground">
                             {formatPricePerUsdt(price, amount)}
                           </span>
                         )}
                       </div>
+                      <span className="font-mono font-medium">
+                        {price ? formatBrl(price) : "N/A"}
+                      </span>
                     </div>
                   ))}
                 </div>
@@ -198,17 +198,17 @@ export function TradingCalculator({orderBook}: TradingCalculatorProps) {
                       key={`sell-${amount}-${exchange}`}
                       className="flex items-center justify-between gap-2 text-xs"
                     >
-                      <span className="capitalize text-muted-foreground">{exchange}</span>
-                      <div className="flex flex-col items-end">
-                        <span className="font-mono font-medium">
-                          {price ? formatBrl(price) : "N/A"}
-                        </span>
+                      <div className="flex items-center gap-2">
+                        <span className="capitalize text-muted-foreground">{exchange}</span>
                         {price && (
                           <span className="font-mono text-[10px] text-muted-foreground">
                             {formatPricePerUsdt(price, amount)}
                           </span>
                         )}
                       </div>
+                      <span className="font-mono font-medium">
+                        {price ? formatBrl(price) : "N/A"}
+                      </span>
                     </div>
                   ))}
                 </div>
