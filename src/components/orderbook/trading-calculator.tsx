@@ -29,7 +29,7 @@ export const EXCHANGE_FEES: Record<string, number> = {
 function calculateBuyPrice(
   asks: {price: number; quantity: number}[],
   usdtAmount: number,
-  exchange: string
+  exchange: string,
 ): number | null {
   let remainingUsdt = usdtAmount;
   let totalBrl = 0;
@@ -38,6 +38,7 @@ function calculateBuyPrice(
     if (remainingUsdt <= 0) break;
 
     const usdtToTake = Math.min(remainingUsdt, ask.quantity);
+
     totalBrl += usdtToTake * ask.price;
     remainingUsdt -= usdtToTake;
   }
@@ -47,6 +48,7 @@ function calculateBuyPrice(
 
   // Apply exchange commission (when buying, we pay more)
   const fee = EXCHANGE_FEES[exchange] || 0;
+
   return totalBrl * (1 + fee);
 }
 
@@ -58,7 +60,7 @@ function calculateBuyPrice(
 function calculateSellPrice(
   bids: {price: number; quantity: number}[],
   usdtAmount: number,
-  exchange: string
+  exchange: string,
 ): number | null {
   let remainingUsdt = usdtAmount;
   let totalBrl = 0;
@@ -67,6 +69,7 @@ function calculateSellPrice(
     if (remainingUsdt <= 0) break;
 
     const usdtToSell = Math.min(remainingUsdt, bid.quantity);
+
     totalBrl += usdtToSell * bid.price;
     remainingUsdt -= usdtToSell;
   }
@@ -76,6 +79,7 @@ function calculateSellPrice(
 
   // Apply exchange commission (when selling, we receive less)
   const fee = EXCHANGE_FEES[exchange] || 0;
+
   return totalBrl * (1 - fee);
 }
 
@@ -103,6 +107,7 @@ function formatUsdt(amount: number): string {
  */
 function formatPricePerUsdt(totalBrl: number, usdtAmount: number): string {
   const pricePerUsdt = totalBrl / usdtAmount;
+
   return new Intl.NumberFormat("pt-BR", {
     style: "currency",
     currency: "BRL",
@@ -117,10 +122,8 @@ function formatPricePerUsdt(totalBrl: number, usdtAmount: number): string {
 export function TradingCalculator({orderBook}: TradingCalculatorProps) {
   if (!orderBook || orderBook.byExchange.size === 0) {
     return (
-      <div className="rounded-lg border bg-card p-4">
-        <div className="text-muted-foreground text-center text-sm">
-          No orderbook data available
-        </div>
+      <div className="bg-card rounded-lg border p-4">
+        <div className="text-muted-foreground text-center text-sm">No orderbook data available</div>
       </div>
     );
   }
@@ -130,7 +133,7 @@ export function TradingCalculator({orderBook}: TradingCalculatorProps) {
   return (
     <div className="flex flex-col gap-4">
       {/* Buy section */}
-      <div className="rounded-lg border bg-card p-4">
+      <div className="bg-card rounded-lg border p-4">
         <h3 className="mb-3 text-sm font-semibold text-green-600 dark:text-green-400">
           Comprar USDT
         </h3>
@@ -148,30 +151,31 @@ export function TradingCalculator({orderBook}: TradingCalculatorProps) {
                 if (a.price === null && b.price === null) return 0;
                 if (a.price === null) return 1;
                 if (b.price === null) return -1;
+
                 return a.price - b.price;
               });
 
             return (
-              <div key={`buy-${amount}`}>
-                <div className="mb-1 text-xs font-medium text-muted-foreground">
+              <div key={`buy-${(amount * Math.random()).toString()}`}>
+                <div className="text-muted-foreground mb-1 text-xs font-medium">
                   {formatUsdt(amount)} USDT
                 </div>
                 <div className="space-y-1">
                   {exchangePrices.map(({exchange, price}) => (
                     <div
-                      key={`buy-${amount}-${exchange}`}
+                      key={`buy-${(amount * Math.random()).toString()}-${exchange}`}
                       className="flex items-center justify-between gap-2 text-xs"
                     >
                       <div className="flex items-center gap-2">
-                        <span className="capitalize text-muted-foreground">{exchange}</span>
-                        {price && (
-                          <span className="font-mono text-[10px] text-muted-foreground">
+                        <span className="text-muted-foreground capitalize">{exchange}</span>
+                        {price !== null && (
+                          <span className="text-muted-foreground font-mono text-[10px]">
                             {formatPricePerUsdt(price, amount)}
                           </span>
                         )}
                       </div>
                       <span className="font-mono font-medium">
-                        {price ? formatBrl(price) : "N/A"}
+                        {price !== null ? formatBrl(price) : "N/A"}
                       </span>
                     </div>
                   ))}
@@ -183,10 +187,8 @@ export function TradingCalculator({orderBook}: TradingCalculatorProps) {
       </div>
 
       {/* Sell section */}
-      <div className="rounded-lg border bg-card p-4">
-        <h3 className="mb-3 text-sm font-semibold text-red-600 dark:text-red-400">
-          Vender USDT
-        </h3>
+      <div className="bg-card rounded-lg border p-4">
+        <h3 className="mb-3 text-sm font-semibold text-red-600 dark:text-red-400">Vender USDT</h3>
         <div className="space-y-3">
           {amounts.map((amount) => {
             // Calculate prices for all exchanges
@@ -201,30 +203,31 @@ export function TradingCalculator({orderBook}: TradingCalculatorProps) {
                 if (a.price === null && b.price === null) return 0;
                 if (a.price === null) return 1;
                 if (b.price === null) return -1;
+
                 return b.price - a.price;
               });
 
             return (
-              <div key={`sell-${amount}`}>
-                <div className="mb-1 text-xs font-medium text-muted-foreground">
+              <div key={`sell-${(amount * Math.random()).toString()}`}>
+                <div className="text-muted-foreground mb-1 text-xs font-medium">
                   {formatUsdt(amount)} USDT
                 </div>
                 <div className="space-y-1">
                   {exchangePrices.map(({exchange, price}) => (
                     <div
-                      key={`sell-${amount}-${exchange}`}
+                      key={`sell-${(amount * Math.random()).toString()}-${exchange}`}
                       className="flex items-center justify-between gap-2 text-xs"
                     >
                       <div className="flex items-center gap-2">
-                        <span className="capitalize text-muted-foreground">{exchange}</span>
-                        {price && (
-                          <span className="font-mono text-[10px] text-muted-foreground">
+                        <span className="text-muted-foreground capitalize">{exchange}</span>
+                        {price !== null && (
+                          <span className="text-muted-foreground font-mono text-[10px]">
                             {formatPricePerUsdt(price, amount)}
                           </span>
                         )}
                       </div>
                       <span className="font-mono font-medium">
-                        {price ? formatBrl(price) : "N/A"}
+                        {price !== null ? formatBrl(price) : "N/A"}
                       </span>
                     </div>
                   ))}

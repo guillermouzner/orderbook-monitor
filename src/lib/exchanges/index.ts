@@ -11,5 +11,7 @@
 export * from "./types";
 
 export {BinanceConnector} from "./binance-connector";
+
 export {FoxbitConnector} from "./foxbit-connector";
+
 export {MercadoBitcoinConnector} from "./mercadobitcoin-connector";

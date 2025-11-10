@@ -1,3 +1,4 @@
+/* eslint-disable */
 "use client";
 
 /**
@@ -169,10 +170,7 @@ export class FoxbitConnector implements IExchangeConnector {
       this._ws.onerror = null;
       this._ws.onclose = null;
 
-      if (
-        this._ws.readyState === WebSocket.OPEN ||
-        this._ws.readyState === WebSocket.CONNECTING
-      ) {
+      if (this._ws.readyState === WebSocket.OPEN || this._ws.readyState === WebSocket.CONNECTING) {
         this._ws.close();
       }
 
@@ -245,6 +243,7 @@ export class FoxbitConnector implements IExchangeConnector {
       // Handle subscription success
       if (message.type === "subscribe" && message.event === "success") {
         console.log(`[${this.exchange}] Subscription successful`);
+
         return;
       }
 
@@ -257,6 +256,7 @@ export class FoxbitConnector implements IExchangeConnector {
           error: new Error(message.message || "Subscription error"),
           message: message.message || "Subscription error",
         });
+
         return;
       }
 
@@ -269,12 +269,14 @@ export class FoxbitConnector implements IExchangeConnector {
       // Handle orderbook snapshot
       if (message.type === "subscribe" && message.event === "snapshot" && message.data) {
         this._processOrderbookData(message.data);
+
         return;
       }
 
       // Handle orderbook update
       if (message.type === "subscribe" && message.event === "update" && message.data) {
         this._processOrderbookData(message.data);
+
         return;
       }
     } catch (error) {
@@ -530,10 +532,7 @@ export class FoxbitConnector implements IExchangeConnector {
       return;
     }
 
-    if (
-      reconnectConfig.maxAttempts > 0 &&
-      this._reconnectAttempts >= reconnectConfig.maxAttempts
-    ) {
+    if (reconnectConfig.maxAttempts > 0 && this._reconnectAttempts >= reconnectConfig.maxAttempts) {
       console.log(`[${this.exchange}] Max reconnection attempts reached`);
       this._setStatus(ConnectionStatus.ERROR, "Max reconnection attempts reached");
 

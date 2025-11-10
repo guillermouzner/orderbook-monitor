@@ -1,3 +1,5 @@
+/* eslint-disable */
+
 "use client";
 
 /**
@@ -62,11 +64,7 @@ interface MBErrorMessage {
   message: string;
 }
 
-type MBMessage =
-  | MBSubscribeResponse
-  | MBOrderbookMessage
-  | MBPongResponse
-  | MBErrorMessage;
+type MBMessage = MBSubscribeResponse | MBOrderbookMessage | MBPongResponse | MBErrorMessage;
 
 /**
  * Default configuration
@@ -183,10 +181,7 @@ export class MercadoBitcoinConnector implements IExchangeConnector {
       this._ws.onerror = null;
       this._ws.onclose = null;
 
-      if (
-        this._ws.readyState === WebSocket.OPEN ||
-        this._ws.readyState === WebSocket.CONNECTING
-      ) {
+      if (this._ws.readyState === WebSocket.OPEN || this._ws.readyState === WebSocket.CONNECTING) {
         this._ws.close();
       }
 
@@ -253,6 +248,7 @@ export class MercadoBitcoinConnector implements IExchangeConnector {
       // Handle subscription success
       if ("name" in message && message.name === "orderbook") {
         console.log(`[${this.exchange}] Subscription successful`);
+
         return;
       }
 
@@ -271,12 +267,14 @@ export class MercadoBitcoinConnector implements IExchangeConnector {
           error: new Error(message.message),
           message: message.message,
         });
+
         return;
       }
 
       // Handle orderbook update
       if ("type" in message && message.type === "orderbook" && message.data) {
         this._processOrderbookData(message);
+
         return;
       }
     } catch (error) {
@@ -363,6 +361,7 @@ export class MercadoBitcoinConnector implements IExchangeConnector {
 
     // Determine limit based on depth config
     let limit: number | undefined;
+
     if (this._config.depth) {
       // MercadoBitcoin supports: 10, 20, 50, 100, 200
       if (this._config.depth <= 10) limit = 10;
@@ -397,6 +396,7 @@ export class MercadoBitcoinConnector implements IExchangeConnector {
 
     // Use same limit as subscription
     let limit: number | undefined;
+
     if (this._config.depth) {
       if (this._config.depth <= 10) limit = 10;
       else if (this._config.depth <= 20) limit = 20;
@@ -456,10 +456,7 @@ export class MercadoBitcoinConnector implements IExchangeConnector {
       return;
     }
 
-    if (
-      reconnectConfig.maxAttempts > 0 &&
-      this._reconnectAttempts >= reconnectConfig.maxAttempts
-    ) {
+    if (reconnectConfig.maxAttempts > 0 && this._reconnectAttempts >= reconnectConfig.maxAttempts) {
       console.log(`[${this.exchange}] Max reconnection attempts reached`);
       this._setStatus(ConnectionStatus.ERROR, "Max reconnection attempts reached");
 

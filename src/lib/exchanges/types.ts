@@ -204,6 +204,7 @@ export function toExchangeSymbol(
     return clean.toLowerCase();
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
   if (toFormat === "mercadobitcoin") {
     // MercadoBitcoin uses format like "BRLBTC" (inverted order, uppercase)
     // Example: "BTC/BRL" → "BTCBRL" → "BRLBTC"
@@ -211,8 +212,10 @@ export function toExchangeSymbol(
 
     // Split the original symbol to get base and quote
     const parts = symbol.split(/[/\-_]/);
+
     if (parts.length === 2) {
       const [base, quote] = parts;
+
       // Invert: quote first, then base
       return (quote + base).toUpperCase();
     }

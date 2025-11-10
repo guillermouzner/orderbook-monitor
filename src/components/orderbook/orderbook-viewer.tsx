@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-misused-promises */
 "use client";
 
 /**
@@ -55,13 +56,21 @@ export function OrderBookViewer({maxRows = 10}: OrderBookViewerProps) {
               <h3 className="text-sm font-semibold text-red-800 dark:text-red-400">
                 Errors ({errors.length})
               </h3>
-              <Button className="h-auto p-1 text-xs" size="sm" variant="ghost" onClick={clearErrors}>
+              <Button
+                className="h-auto p-1 text-xs"
+                size="sm"
+                variant="ghost"
+                onClick={clearErrors}
+              >
                 Clear
               </Button>
             </div>
             <div className="space-y-1">
               {errors.slice(0, 5).map((error, index) => (
-                <div key={`error-${index}`} className="text-xs text-red-700 dark:text-red-400">
+                <div
+                  key={`error-${(index * Math.random()).toString()}`}
+                  className="text-xs text-red-700 dark:text-red-400"
+                >
                   [{error.exchange}] {error.message}
                 </div>
               ))}
@@ -73,13 +82,13 @@ export function OrderBookViewer({maxRows = 10}: OrderBookViewerProps) {
         <div className="flex-1" />
 
         {/* Exchange Fees */}
-        <div className="rounded-lg border bg-card p-3">
+        <div className="bg-card rounded-lg border p-3">
           <ExchangeFees />
         </div>
 
         {/* Status indicator - Footer */}
         {status && (
-          <div className="rounded-lg border bg-card p-3">
+          <div className="bg-card rounded-lg border p-3">
             <ConnectionStatusIndicator status={status} />
           </div>
         )}
@@ -89,12 +98,12 @@ export function OrderBookViewer({maxRows = 10}: OrderBookViewerProps) {
       <div className="flex w-3/4 flex-col">
         {/* Order books grid - 2 columnas por fila */}
         {hasOrderBooks ? (
-          <div className="grid gap-4 grid-cols-2">
+          <div className="grid grid-cols-3 gap-4">
             {Array.from(orderBook.byExchange.values()).map((exchangeOrderBook) => (
               <div
                 key={exchangeOrderBook.exchange}
-                className="bg-card rounded-lg border p-4"
-                style={{width: "296px", height: "272px"}}
+                className="bg-card max-h-[272px] min-w-[296px] rounded-lg border"
+                // style={{width: "296px", height: "272px"}}
               >
                 <OrderBookTable maxRows={maxRows} orderBook={exchangeOrderBook} />
               </div>

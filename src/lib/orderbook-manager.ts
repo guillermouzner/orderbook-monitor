@@ -149,7 +149,7 @@ export class OrderBookManager {
     for (const connector of this._connectors.values()) {
       if (connector.status === ConnectionStatus.DISCONNECTED) {
         promises.push(
-          connector.connect().catch((error) => {
+          connector.connect().catch((error: unknown) => {
             console.error(`Failed to connect to ${connector.exchange}:`, error);
           }),
         );
@@ -375,6 +375,6 @@ export class OrderBookManager {
   private _getCommonSymbol(): string {
     const firstConnector = this._connectors.values().next().value;
 
-    return firstConnector?.orderBook?.symbol || "UNKNOWN";
+    return firstConnector?.orderBook?.symbol ?? "UNKNOWN";
   }
 }

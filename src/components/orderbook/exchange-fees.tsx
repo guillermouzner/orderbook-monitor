@@ -30,9 +30,7 @@ export function ExchangeFees() {
         {Object.entries(EXCHANGE_FEES).map(([exchange, fee]) => (
           <div key={exchange} className="flex items-center justify-between text-xs">
             <span className="capitalize">{exchange}</span>
-            <span className="text-muted-foreground font-mono">
-              {formatFeePercentage(fee)}
-            </span>
+            <span className="text-muted-foreground font-mono">{formatFeePercentage(fee)}</span>
           </div>
         ))}
       </div>
