@@ -91,7 +91,11 @@ export function OrderBookViewer({maxRows = 10}: OrderBookViewerProps) {
         {hasOrderBooks ? (
           <div className="grid gap-4 grid-cols-2">
             {Array.from(orderBook.byExchange.values()).map((exchangeOrderBook) => (
-              <div key={exchangeOrderBook.exchange} className="bg-card rounded-lg border p-4">
+              <div
+                key={exchangeOrderBook.exchange}
+                className="bg-card rounded-lg border p-4"
+                style={{width: "296px", height: "272px"}}
+              >
                 <OrderBookTable maxRows={maxRows} orderBook={exchangeOrderBook} />
               </div>
             ))}

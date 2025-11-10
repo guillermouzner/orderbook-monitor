@@ -56,13 +56,13 @@ export function OrderBookTable({orderBook, maxRows = 10}: OrderBookTableProps) {
 
       {/* Order book grid */}
       <div className="grid grid-cols-2 gap-4">
-        {/* Bids (Buy orders) */}
+        {/* Bids (Buy orders) - Quantity | Price */}
         <div className="flex flex-col">
           <div className="space-y-1">
             {/* Header */}
             <div className="text-muted-foreground grid grid-cols-2 gap-2 text-xs font-medium">
-              <div className="text-left">Price</div>
-              <div className="text-right">Quantity</div>
+              <div className="text-left">Quantity</div>
+              <div className="text-right">Price</div>
             </div>
 
             {/* Bid rows */}
@@ -71,10 +71,10 @@ export function OrderBookTable({orderBook, maxRows = 10}: OrderBookTableProps) {
                 key={`bid-${index}`}
                 className="grid grid-cols-2 gap-2 rounded bg-green-50 px-2 py-1 text-xs dark:bg-green-950/20"
               >
-                <div className="text-left font-mono text-green-700 dark:text-green-400">
+                <div className="text-left font-mono">{formatNumber(bid.quantity, 4)}</div>
+                <div className="text-right font-mono text-green-700 dark:text-green-400">
                   {formatPrice(bid.price)}
                 </div>
-                <div className="text-right font-mono">{formatNumber(bid.quantity, 4)}</div>
               </div>
             ))}
 
@@ -86,7 +86,7 @@ export function OrderBookTable({orderBook, maxRows = 10}: OrderBookTableProps) {
           </div>
         </div>
 
-        {/* Asks (Sell orders) */}
+        {/* Asks (Sell orders) - Price | Quantity */}
         <div className="flex flex-col">
           <div className="space-y-1">
             {/* Header */}
