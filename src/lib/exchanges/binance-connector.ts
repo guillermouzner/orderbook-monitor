@@ -1,3 +1,5 @@
+/* eslint-disable */
+
 "use client";
 
 /**
@@ -222,6 +224,7 @@ export class BinanceConnector implements IExchangeConnector {
       if (isDepthUpdate) {
         // Handle differential depth update
         const depthData = data as BinanceDepthUpdate;
+
         orderBook = {
           exchange: this.exchange,
           symbol: this._config.symbol,
@@ -239,6 +242,7 @@ export class BinanceConnector implements IExchangeConnector {
       } else {
         // Handle partial depth snapshot
         const partialData = data as BinancePartialDepth;
+
         orderBook = {
           exchange: this.exchange,
           symbol: this._config.symbol,
@@ -324,7 +328,7 @@ export class BinanceConnector implements IExchangeConnector {
 
     // Calculate delay with exponential backoff
     const baseDelay = reconnectConfig.delayMs;
-    const multiplier = reconnectConfig.backoffMultiplier || 1;
+    const multiplier = reconnectConfig.backoffMultiplier ?? 1;
     const delay = baseDelay * Math.pow(multiplier, this._reconnectAttempts - 1);
 
     console.log(

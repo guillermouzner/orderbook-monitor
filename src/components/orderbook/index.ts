@@ -9,3 +9,7 @@ export {OrderBookViewer} from "./orderbook-viewer";
 export {OrderBookTable} from "./orderbook-table";
 
 export {ConnectionStatusIndicator} from "./connection-status";
+
+export {TradingCalculator} from "./trading-calculator";
+
+export {ExchangeFees} from "./exchange-fees";

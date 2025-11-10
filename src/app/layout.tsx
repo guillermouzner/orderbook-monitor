@@ -11,7 +11,7 @@ export const metadata: Metadata = {
 export default function RootLayout({children}: {children: React.ReactNode}) {
   return (
     <html suppressHydrationWarning lang="en">
-      <body className="container m-auto grid min-h-screen grid-rows-[auto_1fr_auto] px-4 font-sans antialiased">
+      <body className="m-auto grid min-h-screen grid-rows-[auto_1fr_auto] px-8 font-sans antialiased">
         <ThemeProvider>
           {children}
           <TailwindIndicator />

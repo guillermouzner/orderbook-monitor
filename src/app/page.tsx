@@ -8,8 +8,8 @@ export default function HomePage() {
         <ModeToggle />
       </div>
 
-      <OrderBookProvider autoConnect={true} depth={20} symbol="USDT/BRL">
-        <OrderBookViewer maxRows={10} />
+      <OrderBookProvider autoConnect={true} depth={100} symbol="USDT/BRL">
+        <OrderBookViewer maxRows={6} />
       </OrderBookProvider>
     </main>
   );
