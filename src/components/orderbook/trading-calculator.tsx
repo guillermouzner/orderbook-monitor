@@ -55,9 +55,8 @@ function calculateBuyPrice(
 
   // Apply exchange commission (when buying, we pay more)
   const fee = EXCHANGE_FEES[exchange] || 0;
-  const fixedFee = EXCHANGE_FIXED_FEES[exchange] || 0;
 
-  return totalBrl * (1 + fee) + fixedFee;
+  return totalBrl * (1 + fee);
 }
 
 /**
@@ -86,6 +85,7 @@ function calculateSellPrice(
   if (remainingUsdt > 0) return null;
 
   // Apply exchange commission (when selling, we receive less)
+  // Also subtract fixed fee (e.g., fiat withdrawal cost for Binance)
   const fee = EXCHANGE_FEES[exchange] || 0;
   const fixedFee = EXCHANGE_FIXED_FEES[exchange] || 0;
 
