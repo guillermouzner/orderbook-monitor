@@ -14,6 +14,7 @@ import {OrderBookTable} from "./orderbook-table";
 import {ConnectionStatusIndicator} from "./connection-status";
 import {TradingCalculator} from "./trading-calculator";
 import {ExchangeFees} from "./exchange-fees";
+import {useExchangeFees} from "@/hooks/use-exchange-fees";
 
 interface OrderBookViewerProps {
   /** Maximum rows to display per order book side */
@@ -26,6 +27,7 @@ interface OrderBookViewerProps {
 export function OrderBookViewer({maxRows = 10}: OrderBookViewerProps) {
   const {orderBook, status, isInitializing, errors, connect, disconnect, clearErrors} =
     useOrderBook();
+  const {fees, updateFee, resetFees, hasCustomFees} = useExchangeFees();
 
   // Show loading state
   if (isInitializing) {
@@ -47,7 +49,7 @@ export function OrderBookViewer({maxRows = 10}: OrderBookViewerProps) {
       {/* Sidebar - 1/4 de la pantalla */}
       <div className="flex w-1/4 flex-col gap-4">
         {/* Trading Calculator - Principal */}
-        <TradingCalculator orderBook={orderBook} />
+        <TradingCalculator fees={fees} orderBook={orderBook} />
 
         {/* Errors display */}
         {errors.length > 0 && (
@@ -83,7 +85,12 @@ export function OrderBookViewer({maxRows = 10}: OrderBookViewerProps) {
 
         {/* Exchange Fees */}
         <div className="bg-card rounded-lg border p-3">
-          <ExchangeFees />
+          <ExchangeFees
+            fees={fees}
+            hasCustomFees={hasCustomFees}
+            onResetFees={resetFees}
+            onUpdateFee={updateFee}
+          />
         </div>
 
         {/* Status indicator - Footer */}

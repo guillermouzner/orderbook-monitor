@@ -10,6 +10,7 @@ import {type ConsolidatedOrderBook} from "@/lib/orderbook-manager";
 
 interface TradingCalculatorProps {
   orderBook: ConsolidatedOrderBook | null;
+  fees: Record<string, number>;
 }
 
 /**
@@ -37,6 +38,7 @@ function calculateBuyPrice(
   asks: {price: number; quantity: number}[],
   usdtAmount: number,
   exchange: string,
+  fees: Record<string, number>,
 ): number | null {
   let remainingUsdt = usdtAmount;
   let totalBrl = 0;
@@ -54,7 +56,7 @@ function calculateBuyPrice(
   if (remainingUsdt > 0) return null;
 
   // Apply exchange commission (when buying, we pay more)
-  const fee = EXCHANGE_FEES[exchange] || 0;
+  const fee = fees[exchange] || 0;
 
   return totalBrl * (1 + fee);
 }
@@ -68,6 +70,7 @@ function calculateSellPrice(
   bids: {price: number; quantity: number}[],
   usdtAmount: number,
   exchange: string,
+  fees: Record<string, number>,
 ): number | null {
   let remainingUsdt = usdtAmount;
   let totalBrl = 0;
@@ -86,7 +89,7 @@ function calculateSellPrice(
 
   // Apply exchange commission (when selling, we receive less)
   // Also subtract fixed fee (e.g., fiat withdrawal cost for Binance)
-  const fee = EXCHANGE_FEES[exchange] || 0;
+  const fee = fees[exchange] || 0;
   const fixedFee = EXCHANGE_FIXED_FEES[exchange] || 0;
 
   return totalBrl * (1 - fee) - fixedFee;
@@ -128,7 +131,7 @@ function formatPricePerUsdt(totalBrl: number, usdtAmount: number): string {
 /**
  * TradingCalculator shows buy/sell calculations for different USDT amounts
  */
-export function TradingCalculator({orderBook}: TradingCalculatorProps) {
+export function TradingCalculator({orderBook, fees}: TradingCalculatorProps) {
   if (!orderBook || orderBook.byExchange.size === 0) {
     return (
       <div className="bg-card rounded-lg border p-4">
@@ -152,7 +155,7 @@ export function TradingCalculator({orderBook}: TradingCalculatorProps) {
             const exchangePrices = Array.from(orderBook.byExchange.values())
               .map((exchangeOb) => ({
                 exchange: exchangeOb.exchange,
-                price: calculateBuyPrice(exchangeOb.asks, amount, exchangeOb.exchange),
+                price: calculateBuyPrice(exchangeOb.asks, amount, exchangeOb.exchange, fees),
               }))
               // Sort by best price (lowest first for buying)
               .sort((a, b) => {
@@ -204,7 +207,7 @@ export function TradingCalculator({orderBook}: TradingCalculatorProps) {
             const exchangePrices = Array.from(orderBook.byExchange.values())
               .map((exchangeOb) => ({
                 exchange: exchangeOb.exchange,
-                price: calculateSellPrice(exchangeOb.bids, amount, exchangeOb.exchange),
+                price: calculateSellPrice(exchangeOb.bids, amount, exchangeOb.exchange, fees),
               }))
               // Sort by best price (highest first for selling)
               .sort((a, b) => {
