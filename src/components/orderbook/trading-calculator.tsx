@@ -22,6 +22,13 @@ export const EXCHANGE_FEES: Record<string, number> = {
 };
 
 /**
+ * Fixed fees in BRL for certain exchanges
+ */
+export const EXCHANGE_FIXED_FEES: Record<string, number> = {
+  binance: 60, // R$ 60.00 fixed fee
+};
+
+/**
  * Calculate how much BRL is needed to buy a given amount of USDT
  * Uses asks (sell orders) from the orderbook
  * Includes exchange commission
@@ -48,8 +55,9 @@ function calculateBuyPrice(
 
   // Apply exchange commission (when buying, we pay more)
   const fee = EXCHANGE_FEES[exchange] || 0;
+  const fixedFee = EXCHANGE_FIXED_FEES[exchange] || 0;
 
-  return totalBrl * (1 + fee);
+  return totalBrl * (1 + fee) + fixedFee;
 }
 
 /**
@@ -79,8 +87,9 @@ function calculateSellPrice(
 
   // Apply exchange commission (when selling, we receive less)
   const fee = EXCHANGE_FEES[exchange] || 0;
+  const fixedFee = EXCHANGE_FIXED_FEES[exchange] || 0;
 
-  return totalBrl * (1 - fee);
+  return totalBrl * (1 - fee) - fixedFee;
 }
 
 /**
